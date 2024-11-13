@@ -1,4 +1,5 @@
 import numpy as np
+import pygame
 from matplotlib import pyplot as plt
 from sklearn.datasets import *
 from sklearn.metrics import accuracy_score
@@ -57,8 +58,6 @@ def train_nn(X0, y, learning_rate = 0.2, n_iter = 1000):
     W = []
     b = []
 
-    L = []
-
     for i in range(len(layers) - 1):
         W.append(np.random.randn(layers[i], layers[i + 1])) # first one, is the len of previous layer, second one is the len of layer
         b.append(np.random.randn(layers[i + 1]))
@@ -69,15 +68,19 @@ def train_nn(X0, y, learning_rate = 0.2, n_iter = 1000):
         #forward propagation
         A = forward_propagation(X0, W, b)
 
-        L.append((y - A[-1]).mean())
-
         #back propagation
         W, b = back_propagation(X0, A, W, b, learning_rate, y)
 
-    plt.plot(L)
-    plt.show()
-
     return W, b
+
+
+def color_by_coordinates(v):
+    # Example pattern: gradient based on position
+    v = np.clip(v, -1, 1)
+    red = (np.clip(v, 0, 1) * 255)
+    green = (-np.clip(v, -1, 0) * 255)
+    blue = 128 * np.fmax(green / 255, red / 255)
+    return 255 - red, 255 - green, 255 - blue
 
 
 def main():
@@ -86,31 +89,37 @@ def main():
 
     W, b = train_nn(X, y)
 
-
-    #this code only show the result
-    plt.scatter(X[:,0], X[:,1], c=y, cmap='spring')
-    plt.show()
-
-    # Show the gradient in the outputs matplotlib
-    show_gradient = True
-
-    if show_gradient:
-        min_xvalue = X[:, 0].min()
-        min_yvalue = X[:, 1].min()
-        max_xvalue = X[:, 0].max()
-        max_yvalue = X[:, 1].max()
-        gradient_values = np.zeros((10000, 2))
-        for i in range(100):
-            for j in range(100):
-                gradient_values[i * 100 + j][0] = (i / 100) * (max_xvalue - min_xvalue) + min_xvalue
-                gradient_values[i * 100 + j][1] = (j / 100) * (max_yvalue - min_yvalue) + min_yvalue
-
-        gy = forward_propagation(gradient_values, W, b)[-1]
-        plt.scatter(gradient_values[:, 0], gradient_values[:, 1], c=gy, cmap='RdBu')
-
     yy = forward_propagation(X, W, b)[-1] > 0.5
-    plt.scatter(X[:, 0], X[:, 1], c=yy, cmap='spring')
-    plt.show()
+
+    pygame.init()
+
+    width, height = 640, 480
+    screen = pygame.display.set_mode((width, height))
+    pygame.display.set_caption("Pixel Array Display")
+
+    square_size = 200
+    square_x, square_y = (width - square_size) // 2, (height - square_size) // 2
+
+    square_surface = pygame.Surface((square_size, square_size))
+
+    pixels = np.zeros((square_size, square_size, 3), dtype=np.uint8)
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        for x in range(square_size):
+            for y in range(square_size):
+                pixels[x, y] = color_by_coordinates((x / square_size) * 2 - 1)
+
+        pygame.surfarray.blit_array(square_surface, pixels)
+        screen.fill((30, 30, 30))
+        screen.blit(square_surface, (square_x, square_y))
+        pygame.display.flip()
+
+    pygame.quit()
 
 
 # Press the green button in the gutter to run the script.
