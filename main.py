@@ -76,7 +76,7 @@ def bpr():
 
         for gy in range(grid_height):
             for gx in range(grid_width):
-                v = (pixels_bg_colors[gy * grid_width + gx]) * 2 - 1
+                v = (pixels_bg_colors[gy * grid_width + gx])
                 color = color_by_coordinates(v, (230, 126, 34), (52, 152, 219))
                 pygame.draw.rect(square_surface, color,(gx * pixel_size, gy * pixel_size, pixel_size, pixel_size))
 
@@ -117,7 +117,8 @@ def bpr():
 
 
 def gna():
-    X, y = make_moons(n_samples=100, noise=0.1, random_state=21)
+    # X, y = make_moons(n_samples=100, noise=0.1, random_state=21)
+    X, y = make_circles(n_samples=100, noise=0.1, factor=0.5, random_state=21)
     y = y.reshape((y.shape[0], 1))  # from a big array to a multiples little arrays
 
     ga = GeneticAlgorithms(X, y, [2, 16, 16, 1])
@@ -126,11 +127,11 @@ def gna():
 
     width, height = 640, 480
     square_size = 300
-    pixel_size = 5
-    min_x = -3
-    max_x = 3
-    min_y = -3
-    max_y = 3
+    pixel_size = 10
+    min_x = -2
+    max_x = 2
+    min_y = -2
+    max_y = 2
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("Pixel Array Display")
     square_x, square_y = (width - square_size) // 2, (height - square_size) // 2
@@ -146,6 +147,8 @@ def gna():
     clock = pygame.time.Clock()
     font = pygame.font.SysFont(None, 24)  # Font for displaying FPS
 
+    ga.iterate(100)
+
     running = True
     while running:
         for event in pygame.event.get():
@@ -159,7 +162,7 @@ def gna():
 
         for gy in range(grid_height):
             for gx in range(grid_width):
-                v = (pixels_bg_colors[gy * grid_width + gx]) * 2 - 1
+                v = (pixels_bg_colors[gy * grid_width + gx])
                 color = color_by_coordinates(v, (230, 126, 34), (52, 152, 219))
                 pygame.draw.rect(square_surface, color, (gx * pixel_size, gy * pixel_size, pixel_size, pixel_size))
 
@@ -192,6 +195,12 @@ def gna():
         fps = int(clock.get_fps())
         fps_text = font.render(f"FPS: {fps}", True, (255, 255, 255))
         screen.blit(fps_text, (10, 10))
+
+        text = font.render(f"Best MSE: {ga.get_bestScore()}", True, (255, 255, 255))
+        screen.blit(text, (80, 10))
+
+        text = font.render(f"Best MSE this iteration: {ga.get_bestScoreThisIt()}", True, (255, 255, 255))
+        screen.blit(text, (80, 40))
 
         pygame.display.flip()
         clock.tick(60)

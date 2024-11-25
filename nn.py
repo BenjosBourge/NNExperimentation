@@ -41,7 +41,7 @@ class NeuralNet:
                 for w1 in range(len(self._W[l][w0])):
                     wb.append(self._W[l][w0][w1])
             for b0 in range(len(self._b[l])):
-                self._b[l][b0] = b0
+                wb.append(self._b[l][b0])
         return wb
 
 

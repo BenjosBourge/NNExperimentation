@@ -36,15 +36,25 @@ class GeneticAlgorithms:
             self._population[i].setup_training(X, y)
         self._X = X
         self._y = y
+        self._layers = layers
 
-        self._bestIndividual = self._population[0]
+        self._bestIndividual = Individual(layers)
+        self._bestChromosome = self._population[0].get_wb_as_1D()
         self._bestScore = float('inf')
+
+        self._bestScoreThisIt = float('inf')
 
     def choose_parents(self):
         for i in range(len(self._population)):
             yy = self._population[i].forward_propagation(self._X)[-1]
             fit = self._population[i].MSE(self._y, yy)
             self._population[i].fitness = fit
+            if fit < self._bestScore:
+                self._bestChromosome = self._population[i].get_wb_as_1D()
+                self._bestScore = fit
+            if fit < self._bestScoreThisIt:
+                self._bestScoreThisIt = fit
+
         np.random.shuffle(self._population)
         parents = []
         for i in range(int(len(self._population) / 4)):
@@ -69,7 +79,12 @@ class GeneticAlgorithms:
         return newborns
 
     def mutate(self):
-        pass
+        nb_mutation = 80
+        mutation_strength = 0.5
+        for i in range(len(self._population)):
+            for j in range(nb_mutation):
+                random_index = random.randint(0, len(self._population[i].chromosome) - 1)
+                self._population[i].chromosome[random_index] += random.uniform(-1, 1) * mutation_strength
 
     def kill(self, newborns):
         # replace killed by newborns
@@ -86,13 +101,20 @@ class GeneticAlgorithms:
         for i in range(len(killed)):
             self._population[killed[i]].set_wb_from_1D(newborns[i])
 
-
     def iterate(self, nb_iter=100):
         for i in range(nb_iter):
+            self._bestScoreThisIt = float('inf')
+            self.mutate()
             parents = self.choose_parents()
             newborns = self.mate(parents)
-            self.mutate()
             self.kill(newborns)
+        self._bestIndividual.set_wb_from_1D(self._bestChromosome)
 
     def get_bestIndividualResult(self, X):
         return self._bestIndividual.forward_propagation(X)
+
+    def get_bestScore(self):
+        return self._bestScore
+
+    def get_bestScoreThisIt(self):
+        return self._bestScoreThisIt
