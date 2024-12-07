@@ -1,5 +1,5 @@
 ## Project
-the goal is to learn Neural Network, PSO, genetics algorithm to be ready for my exams.
+the goal is to learn Neural Network and genetics algorithm to be ready for my exams.
 
 
 ## install dependencies
